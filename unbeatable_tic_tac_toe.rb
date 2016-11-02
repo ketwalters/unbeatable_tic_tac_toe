@@ -92,6 +92,24 @@ class Board
     winner_array.join
   end
 
+  def tie
+    @board.length > 9
+  end
+
+  def game_over
+    tie || winner
+  end
+
+  def available_spaces
+    array = []
+    @board.each_with_index do |space,index|
+      if space == ""
+        array << index
+      end
+    end
+    array
+  end
+
 end
 
 class Minimax
@@ -100,16 +118,34 @@ class Minimax
     Board.new.status
   end
 
-  def score(board)
-    if board.winner == @human
-      return 10
-    elsif board.winner == @computer
-      return -10
+  def score(board, player, opponent)
+    if board.winner == player
+      return 1
+    elsif board.winner == opponent
+      return -1
     else
       return 0
     end
   end
 
+   def switch(piece)
+    piece == 'X' ? 'O' : 'X'
+   end
+
+  def minimax(board, player, opponent)
+    return score(board, player, opponent) if game_over(board)
+
+    scores = {}
+
+    board.available_spaces.each do |space|
+      copy_board = board.dup
+
+      copy_board[space] = player
+      scores[space] = minmax(copy_board, switch(player))
+    end
+  end
+  best_move = scores.max_by { |key, value| value }[0]
+  best_move
 end
 
 b = Minimax.new
