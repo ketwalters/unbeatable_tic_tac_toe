@@ -2,6 +2,8 @@ class Game
   def initialize
     @human = nil
     @computer = nil
+    @board = Board.new
+    @mini = Minimax.new
   end
 
   def choose_mark
@@ -28,7 +30,14 @@ class Game
   def move
     choose_mark
     index = gets.chomp.to_i
-    Board.new.choose_spot(@human,index)
+    #until @board.tie || @board.winner
+    if @board.game_over
+      puts "Game over"
+    else
+      @board.choose_spot(@human,index)
+      @board.choose_spot(@computer,@mini.minimax(@board,@computer,@human))
+    end
+    move
   end
 end
 
@@ -46,10 +55,6 @@ class Board
   def choose_spot(player,index)
     @board[index] = player
     display
-  end
-
-  def status
-    @board[2].nil?
   end
 
   def winner
@@ -93,7 +98,7 @@ class Board
   end
 
   def tie
-    @board.length > 9
+    length > 9
   end
 
   def game_over
@@ -113,10 +118,6 @@ class Board
 end
 
 class Minimax
-  def testing
-    Game.new.move
-    Board.new.status
-  end
 
   def score(board, player, opponent)
     if board.winner == player
@@ -133,7 +134,7 @@ class Minimax
    end
 
   def minimax(board, player, opponent)
-    return score(board, player, opponent) if game_over(board)
+    return score(board, player, opponent) if Board.new.game_over
 
     scores = {}
 
@@ -141,18 +142,24 @@ class Minimax
       copy_board = board.dup
 
       copy_board[space] = player
-      scores[space] = minmax(copy_board, switch(player))
+      scores[space] = minmax(copy_board, switch(player), opponent)
+    end
+    best_move = scores.max_by { |key, value| value }
+    other_move = scores.min_by { |key, value| value }
+    
+    if player 
+      return best_move
+    else
+      return other_move
     end
   end
-  best_move = scores.max_by { |key, value| value }[0]
-  best_move
 end
 
-b = Minimax.new
-b.testing
+#b = Minimax.new
+#b.testing
 
-#b = Game.new
-#b.move
+b = Game.new
+b.move
 
 
 
